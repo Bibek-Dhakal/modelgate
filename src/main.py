@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -32,8 +32,7 @@ app.add_middleware(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """
-    Overrides the default validation error to ensure structured, typed JSON responses
-    that do not leak internal stack traces to the client.
+    Overrides the default Pydantic validation error to ensure structured, typed JSON responses.
     """
     logger.warning(f"Validation error on {request.url.path}: {exc.errors()}")
     error_response = ErrorResponse(
@@ -48,6 +47,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         ],
     )
     return JSONResponse(status_code=422, content=error_response.model_dump())
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Catches explicit HTTPExceptions (like dynamic schema validation errors)
+    and wraps them in our standardized error structure.
+    """
+    error_response = ErrorResponse(error=str(exc.detail), detail=[])
+    return JSONResponse(status_code=exc.status_code, content=error_response.model_dump())
 
 
 @app.exception_handler(Exception)

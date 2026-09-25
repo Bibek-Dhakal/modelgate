@@ -1,30 +1,70 @@
-# Architecture
+# Architecture & System Design
 
-The system utilizes FastAPI for route handling and Pydantic for strict serialization and validation. The inference layer is decoupled from the routing logic.
+ModelGate decouples the API routing logic from the inference and validation engines. This separation of concerns ensures the system remains scalable, secure, and easy to test.
 
-## System Flow
+## 1. Startup Lifecycle
+
+Because ModelGate supports dynamic URLs and custom schemas, it performs a strict initialization sequence before accepting traffic:
+
+```mermaid
+sequenceDiagram
+    participant OS as Environment
+    participant Init as App Startup
+    participant FileSys as Temp Storage / FileSys
+    participant Memory as Inference Singleton
+
+    Init->>OS: Read Environment Variables
+    
+    alt INPUT_SCHEMA_PATH is set
+        Init->>FileSys: Read JSON Schema file
+        FileSys-->>Init: Parse custom_schema dictionary
+    end
+
+    alt USE_MOCK_MODEL == False
+        Init->>OS: Read MODEL_ARTIFACT_PATH
+        alt Path is URL
+            Init->>FileSys: Download file to temp directory
+        end
+        Init->>Memory: Deserialize (Joblib/Pickle) into RAM
+    else USE_MOCK_MODEL == True
+        Init->>Memory: Enable deterministic fallback logic
+    end
+    
+    Init->>Init: Uvicorn starts listening on PORT
+```
+
+## 2. Request Flow & Error Shielding
+
+"Error Shielding" is a core tenet of this architecture. In many basic Flask/FastAPI deployments, validation errors or model crashes return a `500` error accompanied by a raw Python stack trace. This is a severe security and DX (Developer Experience) flaw. 
+
+ModelGate overrides FastAPI's default handlers to ensure complete shielding.
 
 ```mermaid
 sequenceDiagram
     participant Client
-    participant API as FastAPI Router
-    participant Validator as Pydantic Models
+    participant Router as API Router
+    participant Validator as JSON Schema / Pydantic
     participant Inference as Inference Service
 
-    Client->>API: POST /api/v1/predict (JSON)
-    API->>Validator: Validate Schema & Types
-    alt Invalid Input
-        Validator-->>API: ValidationError
-        API-->>Client: 422 Unprocessable Entity (Structured JSON)
+    Client->>Router: POST /predict (JSON)
+    Router->>Validator: Validate Request Shape
+    
+    alt Invalid Shape or Schema
+        Validator-->>Router: ValidationError
+        Router-->>Client: 422 Unprocessable Entity (Structured JSON)
     else Valid Input
-        Validator-->>API: Validated Request Object
-        API->>Inference: predict(feature_1, feature_2)
-        Inference-->>API: Prediction Result
-        API-->>Client: 200 OK (Prediction JSON)
+        Router->>Inference: predict(features)
+        
+        alt Inference Exception (e.g. math error)
+            Inference-->>Router: RuntimeError
+            Router-->>Client: 500 Internal Server Error (Generic JSON, trace logged)
+        else Success
+            Inference-->>Router: Prediction Value
+            Router-->>Client: 200 OK (Prediction JSON)
+        end
     end
 ```
 
-## Key Invariants
+## 3. The Inference Singleton
 
-1. **Strict Input Boundary:** Pydantic is utilized to ensure that the data shape and values are entirely validated before being passed to `InferenceService`.
-2. **Safe Error Handling:** Overridden exception handlers capture backend faults and return controlled error structures to the user, ensuring security and consistency.
+To avoid the massive latency penalty of loading a 100MB+ ML model from disk on every HTTP request, `src/services/inference.py` implements the Singleton pattern. The model is instantiated in RAM exactly once when the worker starts, and the `predict()` method simply calls the in-memory array operations.

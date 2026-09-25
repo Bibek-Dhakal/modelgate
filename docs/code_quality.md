@@ -1,37 +1,40 @@
 # Code Quality Guidelines
 
-This project uses modern ecosystem standards for formatting and linting. Automated checks are enforced via `pre-commit`.
+ModelGate strictly enforces code quality to maintain a clean, readable, and predictable codebase. We utilize **Ruff**—an extremely fast Python linter and code formatter written in Rust—replacing older tools like Black, Flake8, and isort.
 
-## Automated Checks Trigger
+## Automated Checks (Git Hooks)
 
-Code quality checks run **automatically on `git commit`** via `pre-commit` hooks.
+Code quality checks run **automatically on every `git commit`** via `pre-commit`. 
 
-## Environment Setup
+If a formatting error is detected, the commit will be blocked. Ruff is configured to auto-fix safe issues, so in most cases, you simply need to restage your files and commit again.
+
+### Environment Setup
 
 To enable automated checks on your local machine:
 ```bash
 # Install dev dependencies (if not already installed)
 pip install -e .[dev]
 
-# Install the pre-commit hook
+# Install the pre-commit hook into your .git directory
 pre-commit install
 ```
 
 ## Manual Execution Commands
 
-You can run `ruff` manually at any time without committing:
+You can run the quality tools manually at any time without committing:
 
 ### Run on all files
 ```bash
-# Format code
+# Sort imports and format code standard
 ruff format .
 
-# Run linter and auto-fix simple issues
+# Run linter and auto-fix simple issues (e.g. unused imports)
 ruff check . --fix
 ```
 
-### Run pre-commit on all files manually
+### Run pre-commit hooks manually
 ```bash
+# Triggers Ruff formatting, linting, and trailing-whitespace fixes
 pre-commit run --all-files
 ```
 
@@ -41,4 +44,4 @@ If you absolutely must skip hooks (e.g., for an emergency hotfix), use the `--no
 ```bash
 git commit -m "fix: emergency hotfix" --no-verify
 ```
-*Warning: Use this responsibly. CI pipelines will still enforce these checks.*
+*Warning: Use this responsibly. CI pipelines will still enforce these checks on Pull Requests, so the code must eventually comply.*

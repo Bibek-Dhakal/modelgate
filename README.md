@@ -1,47 +1,81 @@
-# ModelGate
+# ModelGate 🚀
 
-Containerized, publicly reachable inference service for a trained model.
+> **Production-ready, containerized machine learning inference API with zero boilerplate.**
 
-## Core Philosophy
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)
+![Ruff](https://img.shields.io/badge/Linter-Ruff-gray.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-A trained model sitting in a notebook proves nothing about production readiness. This project addresses the gap by providing a containerized, validated, and tested deployment mechanism via a real RESTful API. 
+A trained model sitting in a Jupyter Notebook proves nothing about production readiness. **ModelGate** bridges the gap between data science experiments and software engineering by providing a robust, dynamic, and safe microservice for tabular ML models (Scikit-Learn, Joblib, Pickle).
 
-## Structure & Architecture
+## ✨ Key Features
 
-* **Input Validation:** Enforced rigorously via Pydantic; malformed inputs never reach the model.
-* **Error Handling:** All exceptions return strict, typed JSON structures; server internals and raw stack traces are never exposed to the client.
-* **Containerization:** The application is fully self-contained using Docker, resolving "works on my machine" issues.
+- **Dynamic Artifact Loading**: Instantly serve `.joblib` or `.pkl` models by simply providing a local path or a **direct HTTP URL**. The API downloads and loads it on startup.
+- **Strict, Dynamic Input Validation**: Pass a `schema.json` via environment variables. ModelGate uses `jsonschema` to ensure malformed data never reaches your model.
+- **Mock Mode for Instant Testing**: Comes with `USE_MOCK_MODEL=True` by default, calculating deterministic predictions so you can test API integrations before your real model is even trained.
+- **Error Shielding**: Overridden Exception Handlers strictly prevent Python stack traces from leaking to the client, returning standardized, safe JSON `422` and `500` errors.
+- **Docker-Native**: Fully containerized and optimized for bursty, low-latency tabular model inference on standard cloud providers.
 
-## Documentation Index
+---
 
-- [Code Quality & Linting](docs/code_quality.md)
-- [Usage & Configuration](docs/usage/README.md)
-- [Architecture & Design](docs/architecture/README.md)
-- [Testing Standards](docs/testing/README.md)
+## 📖 Documentation
 
-## Quickstart
+Dive deeper into the specific subsystems:
 
-### 1. Running Locally (Development)
+- 🌐 **[API Reference](docs/api/README.md)**: Endpoints, request payloads, and example curl commands.
+- ⚙️ **[Usage & Configuration](docs/usage/README.md)**: Environment variables, Schema validation, and Model URL loading.
+- 🏗️ **[Architecture & Design](docs/architecture/README.md)**: System flow, Mermaid diagrams, and error shielding concepts.
+- 🧪 **[Testing Standards](docs/testing/README.md)**: Pytest strategies, coverage, and CI checks.
+- 🧹 **[Code Quality](docs/code_quality.md)**: Pre-commit, Ruff linting, and formatting.
 
-Install dependencies and start the server:
+---
+
+## ⚡ Quickstart: Zero to Inference
+
+### 1. Run in Mock Mode (Default)
+Want to see it work immediately without downloading any model artifacts?
+
 ```bash
+# Install dependencies
 pip install -e .[dev]
-cp .env.example .env
+
+# Start the server (Uses Mock Model by default)
 uvicorn src.main:app --reload
 ```
 
-The API docs will be available at `http://127.0.0.1:8000/docs`.
-
-### 2. Running via Docker (Production Simulation)
-
-```bash
-docker build -t modelgate .
-docker run -p 8000:8000 --env-file .env.example modelgate
-```
-
-Test the live endpoint:
+Test the endpoint:
 ```bash
 curl -X POST "http://localhost:8000/api/v1/predict" \
      -H "Content-Type: application/json" \
-     -d '{"feature_1": 10.5, "feature_2": 2}'
+     -d '{"features": {"age": 30, "income": 50000}}'
 ```
+*Response:* `{"prediction": 75045.5, "model_version": "v1.0.0"}`
+
+### 2. Run with a Real Model (Docker)
+Have a real `.joblib` model? Let's deploy it.
+
+1. Create an `.env` file:
+```env
+USE_MOCK_MODEL=False
+MODEL_ARTIFACT_TYPE=joblib
+MODEL_ARTIFACT_PATH=https://github.com/your-username/your-repo/raw/main/model.joblib
+```
+2. Build and Run:
+```bash
+docker build -t modelgate .
+docker run -p 8000:8000 --env-file .env modelgate
+```
+
+Your Scikit-Learn model is now securely exposed via a REST API!
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please check out our [Contributing Guidelines](CONTRIBUTING.md) for details on our strict Conventional Commits requirement, automated release process, and local setup.
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.

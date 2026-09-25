@@ -1,4 +1,12 @@
 import logging
+import os
+import pickle
+import tempfile
+import urllib.request
+from typing import Any
+
+import joblib
+import numpy as np
 
 from src.config import settings
 
@@ -8,26 +16,85 @@ logger = logging.getLogger(__name__)
 class InferenceService:
     def __init__(self):
         self.version = settings.model_version
+        self.use_mock = settings.use_mock_model
+
+        if self.use_mock:
+            logger.info("USE_MOCK_MODEL is True. Using deterministic mock model.")
+            self.model = None
+        else:
+            logger.info(f"Loading real model artifact. Type: {settings.model_artifact_type}")
+            self.model = self._load_real_model()
+
         logger.info(f"Initialized InferenceService with model version: {self.version}")
-        # In a real app, you would load your .joblib or .pt file here:
-        # self.model = joblib.load("model.joblib")
 
-    def predict(self, feature_1: float, feature_2: int) -> float:
+    def _load_real_model(self) -> Any:
         """
-        Mock prediction logic.
-        Represents a real ML model's inference step.
+        Downloads (if URL) and loads the model artifact based on type.
         """
-        logger.debug(f"Running inference for f1={feature_1}, f2={feature_2}")
+        path = settings.model_artifact_path
+        m_type = settings.model_artifact_type.lower()
 
-        # Simulated weights
-        weight_1 = 2.5
-        weight_2 = -1.2
-        bias = 0.5
+        if not path:
+            raise ValueError("MODEL_ARTIFACT_PATH must be set when USE_MOCK_MODEL is False.")
 
-        # Inference
-        result = (feature_1 * weight_1) + (feature_2 * weight_2) + bias
-        return round(result, 4)
+        # Download from URL if needed
+        if path.startswith("http://") or path.startswith("https://"):
+            logger.info(f"Downloading model artifact from {path}...")
+            # Use context manager to satisfy SIM115, though we set delete=False to read it next
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{m_type}") as temp_file:
+                local_path = temp_file.name
+                urllib.request.urlretrieve(path, local_path)
+        else:
+            local_path = path
+
+        if not os.path.exists(local_path):
+            raise FileNotFoundError(f"Model artifact not found at {local_path}")
+
+        logger.info(f"Loading model from {local_path} using {m_type}...")
+
+        if m_type == "joblib":
+            return joblib.load(local_path)
+        elif m_type in ("pickle", "pkl"):
+            with open(local_path, "rb") as f:
+                return pickle.load(f)
+        else:
+            raise ValueError(
+                f"Unsupported MODEL_ARTIFACT_TYPE: {m_type}. Use 'joblib' or 'pickle'."
+            )
+
+    def predict(self, features: dict[str, Any]) -> Any:
+        """
+        Executes inference using the loaded model or mock fallback.
+        Accepts a dictionary of features and converts it to the format
+        standard ML models (like scikit-learn) expect.
+        """
+        logger.debug(f"Running inference for features: {features}")
+
+        if self.use_mock:
+            # Deterministic mock calculation based on input values
+            numeric_values = [float(v) for v in features.values() if isinstance(v, (int, float))]
+            if not numeric_values:
+                return 0.0
+            # Simple mock formula: sum of numeric features * 1.5 + 0.5
+            result = sum(numeric_values) * 1.5 + 0.5
+            return round(result, 4)
+
+        # For a real model, we extract the values into a 2D array [ [val1, val2, ...] ]
+        # Ensure the order of dictionary keys matches the model's training order!
+        input_array = np.array([list(features.values())])
+
+        try:
+            prediction = self.model.predict(input_array)[0]
+        except Exception as e:
+            logger.error(f"Model prediction failed: {e}")
+            raise RuntimeError(f"Failed to execute prediction on model: {e}") from e
+
+        # Ensure native Python types for JSON serialization
+        if isinstance(prediction, np.generic):
+            return prediction.item()
+
+        return prediction
 
 
-# Singleton pattern to prevent reloading the model on every request
+# Singleton pattern to prevent reloading the model on every API request
 inference_service = InferenceService()
