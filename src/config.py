@@ -1,5 +1,6 @@
 import logging
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,10 +14,19 @@ class Settings(BaseSettings):
     model_artifact_path: str = (
         "https://huggingface.co/DmytroSerbeniuk/my-iris-model/resolve/main/model.joblib"
     )
-    model_artifact_type: str = "joblib"  # "joblib" or "pickle"
+    model_artifact_type: str = "joblib"
     input_schema_path: str = "default_schema.json"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    @field_validator("model_artifact_type")
+    @classmethod
+    def strip_inline_comments(cls, v: str) -> str:
+        """
+        Docker's --env-file parser does not always ignore inline comments.
+        This ensures 'joblib  # comment' becomes 'joblib'.
+        """
+        return v.split("#")[0].strip()
 
     @property
     def parsed_cors_origins(self) -> list[str]:
