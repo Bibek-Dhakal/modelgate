@@ -15,7 +15,7 @@ ModelGate is designed to be completely configurable via Environment Variables. Y
 | Name | Type | Default Value | Description |
 |------|------|---------------|-------------|
 | `MODEL_ARTIFACT_PATH` | string | `https://huggingface.co/.../model.joblib` | Local file path or HTTP(S) URL to the model artifact. Defaults to a public Iris model. |
-| `MODEL_ARTIFACT_TYPE` | string | `joblib` | The deserializer to use. Valid options: `joblib` or `pickle`. |
+| `MODEL_ARTIFACT_TYPE` | string | `joblib` | The deserializer to use. Valid options: `joblib` or `pickle`. *Note: Inline comments in `.env` are automatically stripped to prevent Docker parsing errors.* |
 
 ### Dynamic Schema Validation
 | Name | Type | Default Value | Description |

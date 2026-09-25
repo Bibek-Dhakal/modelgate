@@ -4,7 +4,7 @@ ModelGate decouples the API routing logic from the inference and validation engi
 
 ## 1. Startup Lifecycle
 
-Because ModelGate supports dynamic URLs and custom schemas, it performs a strict initialization sequence before accepting traffic:
+Because ModelGate supports dynamic URLs and custom schemas, it performs a strict initialization sequence before accepting traffic. It downloads the required artifact and parses the schema into memory.
 
 ```mermaid
 sequenceDiagram
@@ -15,20 +15,14 @@ sequenceDiagram
 
     Init->>OS: Read Environment Variables
     
-    alt INPUT_SCHEMA_PATH is set
-        Init->>FileSys: Read JSON Schema file
-        FileSys-->>Init: Parse custom_schema dictionary
-    end
+    Init->>FileSys: Read JSON Schema (INPUT_SCHEMA_PATH)
+    FileSys-->>Init: Parse custom_schema dictionary
 
-    alt USE_MOCK_MODEL == False
-        Init->>OS: Read MODEL_ARTIFACT_PATH
-        alt Path is URL
-            Init->>FileSys: Download file to temp directory
-        end
-        Init->>Memory: Deserialize (Joblib/Pickle) into RAM
-    else USE_MOCK_MODEL == True
-        Init->>Memory: Enable deterministic fallback logic
+    Init->>OS: Read MODEL_ARTIFACT_PATH
+    alt Path is URL
+        Init->>FileSys: Download file to temp directory
     end
+    Init->>Memory: Deserialize (Joblib/Pickle) into RAM
     
     Init->>Init: Uvicorn starts listening on PORT
 ```
