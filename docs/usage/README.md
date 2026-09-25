@@ -14,14 +14,13 @@ ModelGate is designed to be completely configurable via Environment Variables. Y
 ### Dynamic Model Loading
 | Name | Type | Default Value | Description |
 |------|------|---------------|-------------|
-| `USE_MOCK_MODEL` | boolean | `True` | If true, uses a deterministic math fallback instead of a real artifact. |
-| `MODEL_ARTIFACT_PATH` | string | `None` | Local file path or HTTP(S) URL to the model artifact. Required if mock is `False`. |
+| `MODEL_ARTIFACT_PATH` | string | `https://huggingface.co/.../model.joblib` | Local file path or HTTP(S) URL to the model artifact. Defaults to a public Iris model. |
 | `MODEL_ARTIFACT_TYPE` | string | `joblib` | The deserializer to use. Valid options: `joblib` or `pickle`. |
 
 ### Dynamic Schema Validation
 | Name | Type | Default Value | Description |
 |------|------|---------------|-------------|
-| `INPUT_SCHEMA_PATH` | string | `None` | Path to a `.json` file containing a valid JSON Schema. |
+| `INPUT_SCHEMA_PATH` | string | `default_schema.json` | Path to a `.json` file containing a valid JSON Schema. |
 
 ---
 
@@ -49,7 +48,8 @@ While flexible, real ML models crash if feature types are wrong or missing. You 
     "income": { "type": "number" },
     "city": { "type": "string" }
   },
-  "required": ["age", "income"]
+  "required": ["age", "income"],
+  "additionalProperties": false
 }
 ```
 
@@ -69,7 +69,6 @@ If you don't want to bake large `.joblib` files into your Docker image, ModelGat
 
 Set your environment variables:
 ```env
-USE_MOCK_MODEL=False
 MODEL_ARTIFACT_PATH=https://my-bucket.s3.amazonaws.com/production/model_v2.joblib
 MODEL_ARTIFACT_TYPE=joblib
 ```

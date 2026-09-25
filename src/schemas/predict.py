@@ -7,7 +7,14 @@ class PredictRequest(BaseModel):
     features: dict[str, Any] = Field(
         ...,
         description="Key-value dictionary of input features for the model.",
-        json_schema_extra={"example": {"age": 28, "income": 55000, "score": 4.5}},
+        json_schema_extra={
+            "example": {
+                "sepal_length": 5.1,
+                "sepal_width": 3.5,
+                "petal_length": 1.4,
+                "petal_width": 0.2,
+            }
+        },
     )
 
 

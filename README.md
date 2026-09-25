@@ -14,7 +14,7 @@ A trained model sitting in a Jupyter Notebook proves nothing about production re
 
 - **Dynamic Artifact Loading**: Instantly serve `.joblib` or `.pkl` models by simply providing a local path or a **direct HTTP URL**. The API downloads and loads it on startup.
 - **Strict, Dynamic Input Validation**: Pass a `schema.json` via environment variables. ModelGate uses `jsonschema` to ensure malformed data never reaches your model.
-- **Mock Mode for Instant Testing**: Comes with `USE_MOCK_MODEL=True` by default, calculating deterministic predictions so you can test API integrations before your real model is even trained.
+- **Out-of-the-box Ready**: Defaults to downloading and serving a public Scikit-Learn Iris classification model so you can test integrations immediately.
 - **Error Shielding**: Overridden Exception Handlers strictly prevent Python stack traces from leaking to the client, returning standardized, safe JSON `422` and `500` errors.
 - **Docker-Native**: Fully containerized and optimized for bursty, low-latency tabular model inference on standard cloud providers.
 
@@ -34,14 +34,14 @@ Dive deeper into the specific subsystems:
 
 ## ⚡ Quickstart: Zero to Inference
 
-### 1. Run in Mock Mode (Default)
-Want to see it work immediately without downloading any model artifacts?
+### 1. Run the Default Model (Local)
+By default, ModelGate automatically downloads a Scikit-Learn Logistic Regression model (Iris dataset) and enforces its JSON schema.
 
 ```bash
 # Install dependencies
 pip install -e .[dev]
 
-# Start the server (Uses Mock Model by default)
+# Start the server
 uvicorn src.main:app --reload
 ```
 
@@ -49,18 +49,25 @@ Test the endpoint:
 ```bash
 curl -X POST "http://localhost:8000/api/v1/predict" \
      -H "Content-Type: application/json" \
-     -d '{"features": {"age": 30, "income": 50000}}'
+     -d '{
+           "features": {
+             "sepal_length": 5.1,
+             "sepal_width": 3.5,
+             "petal_length": 1.4,
+             "petal_width": 0.2
+           }
+         }'
 ```
-*Response:* `{"prediction": 75045.5, "model_version": "v1.0.0"}`
+*Response:* `{"prediction": 0, "model_version": "v1.0.0"}` (Class 0 = Setosa)
 
-### 2. Run with a Real Model (Docker)
-Have a real `.joblib` model? Let's deploy it.
+### 2. Run with your own Real Model (Docker)
+Have your own `.joblib` model? Let's deploy it.
 
-1. Create an `.env` file:
+1. Create an `.env` file pointing to your assets:
 ```env
-USE_MOCK_MODEL=False
 MODEL_ARTIFACT_TYPE=joblib
 MODEL_ARTIFACT_PATH=https://github.com/your-username/your-repo/raw/main/model.joblib
+INPUT_SCHEMA_PATH=my_custom_schema.json
 ```
 2. Build and Run:
 ```bash

@@ -16,15 +16,8 @@ logger = logging.getLogger(__name__)
 class InferenceService:
     def __init__(self):
         self.version = settings.model_version
-        self.use_mock = settings.use_mock_model
-
-        if self.use_mock:
-            logger.info("USE_MOCK_MODEL is True. Using deterministic mock model.")
-            self.model = None
-        else:
-            logger.info(f"Loading real model artifact. Type: {settings.model_artifact_type}")
-            self.model = self._load_real_model()
-
+        logger.info(f"Loading model artifact. Type: {settings.model_artifact_type}")
+        self.model = self._load_real_model()
         logger.info(f"Initialized InferenceService with model version: {self.version}")
 
     def _load_real_model(self) -> Any:
@@ -35,12 +28,12 @@ class InferenceService:
         m_type = settings.model_artifact_type.lower()
 
         if not path:
-            raise ValueError("MODEL_ARTIFACT_PATH must be set when USE_MOCK_MODEL is False.")
+            raise ValueError("MODEL_ARTIFACT_PATH must be set.")
 
         # Download from URL if needed
         if path.startswith("http://") or path.startswith("https://"):
             logger.info(f"Downloading model artifact from {path}...")
-            # Use context manager to satisfy SIM115, though we set delete=False to read it next
+            # Use context manager to satisfy SIM115, setting delete=False to read it next
             with tempfile.NamedTemporaryFile(delete=False, suffix=f".{m_type}") as temp_file:
                 local_path = temp_file.name
                 urllib.request.urlretrieve(path, local_path)
@@ -64,22 +57,13 @@ class InferenceService:
 
     def predict(self, features: dict[str, Any]) -> Any:
         """
-        Executes inference using the loaded model or mock fallback.
+        Executes inference using the loaded model.
         Accepts a dictionary of features and converts it to the format
         standard ML models (like scikit-learn) expect.
         """
         logger.debug(f"Running inference for features: {features}")
 
-        if self.use_mock:
-            # Deterministic mock calculation based on input values
-            numeric_values = [float(v) for v in features.values() if isinstance(v, (int, float))]
-            if not numeric_values:
-                return 0.0
-            # Simple mock formula: sum of numeric features * 1.5 + 0.5
-            result = sum(numeric_values) * 1.5 + 0.5
-            return round(result, 4)
-
-        # For a real model, we extract the values into a 2D array [ [val1, val2, ...] ]
+        # Extract values into a 2D array [ [val1, val2, ...] ]
         # Ensure the order of dictionary keys matches the model's training order!
         input_array = np.array([list(features.values())])
 

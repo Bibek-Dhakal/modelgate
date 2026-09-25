@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,11 +9,12 @@ class Settings(BaseSettings):
     cors_allowed_origins: str = "*"
     model_version: str = "v1.0.0"
 
-    # Dynamic model configuration
-    use_mock_model: bool = True
-    model_artifact_path: Optional[str] = None
+    # Dynamic model configuration defaults to an Iris model
+    model_artifact_path: str = (
+        "https://huggingface.co/DmytroSerbeniuk/my-iris-model/resolve/main/model.joblib"
+    )
     model_artifact_type: str = "joblib"  # "joblib" or "pickle"
-    input_schema_path: Optional[str] = None
+    input_schema_path: str = "default_schema.json"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

@@ -1,15 +1,12 @@
 from src.services.inference import InferenceService
 
 
-def test_inference_mock_logic():
+def test_inference_real_model_logic():
     service = InferenceService()
 
-    # Test deterministic calculation of the mock model:
-    # Formula: sum(values) * 1.5 + 0.5
-    # feature_1 = 10.0, feature_2 = 2.0 => sum = 12.0
-    # expected = (12.0 * 1.5) + 0.5 = 18.0 + 0.5 = 18.5
-
-    features = {"feature_1": 10.0, "feature_2": 2.0}
+    # Test valid prediction using the default Iris model
+    # (5.1, 3.5, 1.4, 0.2) typically predicts class 0 (setosa)
+    features = {"sepal_length": 5.1, "sepal_width": 3.5, "petal_length": 1.4, "petal_width": 0.2}
 
     prediction = service.predict(features=features)
-    assert prediction == 18.5
+    assert prediction == 0  # 0 corresponds to Iris Setosa
