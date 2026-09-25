@@ -37,5 +37,8 @@ pythonpath = ["."]
 addopts = "--cov=src --cov-report=term-missing --cov-report=xml"
 filterwarnings = [
     "ignore:.*httpx2.*",
-    "ignore::DeprecationWarning"
+    "ignore::DeprecationWarning",
+    "ignore::sklearn.exceptions.InconsistentVersionWarning",
+    "ignore:Trying to unpickle estimator.*",
+    "ignore:.*X does not have valid feature names.*"
 ]

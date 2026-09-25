@@ -65,11 +65,10 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
 **Response: `200 OK`**
 ```json
 {
-  "prediction": 0,
+  "prediction": "setosa",
   "model_version": "v1.0.0"
 }
 ```
-*(Note: Prediction `0` maps to the Iris Setosa class).*
 
 ---
 

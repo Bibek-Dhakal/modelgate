@@ -58,7 +58,7 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
            }
          }'
 ```
-*Response:* `{"prediction": 0, "model_version": "v1.0.0"}` (Class 0 = Setosa)
+*Response:* `{"prediction": "setosa", "model_version": "v1.0.0"}`
 
 ### 2. Run with your own Real Model (Docker)
 Have your own `.joblib` model? Let's deploy it.

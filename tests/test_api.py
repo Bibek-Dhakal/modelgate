@@ -27,8 +27,9 @@ def test_predict_valid_input():
     data = response.json()
     assert "prediction" in data
     assert "model_version" in data
-    # The default Iris model returns 0, 1, or 2 (integers)
-    assert isinstance(data["prediction"], int)
+    # The default Iris model returns string class names (e.g., "setosa")
+    assert isinstance(data["prediction"], str)
+    assert data["prediction"] == "setosa"
 
 
 def test_predict_invalid_input_type():
