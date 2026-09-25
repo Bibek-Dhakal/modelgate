@@ -60,7 +60,6 @@ coverage.xml
 *.swo
 
 # Docker
-.dockerignore
 docker-compose.override.yml
 
 # Other
