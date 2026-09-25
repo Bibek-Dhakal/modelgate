@@ -1,6 +1,6 @@
 [project]
 name = "modelgate"
-version = "0.1.0"
+version = "0.2.0"
 description = "Containerized, publicly reachable inference service for a trained model."
 authors = [{ name = "Bibek Dhakal" }]
 requires-python = ">=3.9"
