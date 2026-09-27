@@ -49,6 +49,9 @@ Dive deeper into the specific subsystems:
   linting, and
   formatting.
 
+- > For interactive SDK exploration,
+  see [SDK Test in Notebook](https://github.com/Bibek-Dhakal/modelgate/blob/main/tests/test_SDK.ipynb)
+
 ---
 
 ## ⚡ Quickstart: Zero to Inference
