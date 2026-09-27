@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.3.0](https://github.com/Bibek-Dhakal/modelgate/compare/v0.2.0...v0.3.0) (2026-09-27)
+
+
+### Features
+
+* **sdk:** add python SDK support and prepare PyPI distribution ([db129b1](https://github.com/Bibek-Dhakal/modelgate/commit/db129b154382d5e4a28490ce78f1b677678d7957))
+
+
+### Miscellaneous Chores
+
+* add SDK test notebook template ([ce20831](https://github.com/Bibek-Dhakal/modelgate/commit/ce208310d3ccd49f68a7c146df5af25a43050c5d))
+
+
+### Documentation
+
+* add interactive SDK notebook to testing documentation ([22bd73f](https://github.com/Bibek-Dhakal/modelgate/commit/22bd73f7b664944cff3fb5581dc06c0841a262ba))
+
+
+### Code Refactoring
+
+* refactor sdk test notebook ([deaab17](https://github.com/Bibek-Dhakal/modelgate/commit/deaab17b080804cd880a9b891f07ac8a4ed706ed))
+
 ## [0.2.0](https://github.com/Bibek-Dhakal/modelgate/compare/v0.1.0...v0.2.0) (2026-09-25)
 
 
