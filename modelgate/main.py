@@ -5,9 +5,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from src.api.routes import router
-from src.config import settings
-from src.schemas.errors import ErrorResponse
+from modelgate.api.routes import router
+from modelgate.config import settings
+from modelgate.schemas.errors import ErrorResponse
 
 logger = logging.getLogger(__name__)
 

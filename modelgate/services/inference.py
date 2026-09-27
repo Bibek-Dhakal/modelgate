@@ -3,20 +3,21 @@ import os
 import pickle
 import tempfile
 import urllib.request
+import warnings
 from typing import Any
 
 import joblib
 import numpy as np
 
-from src.config import settings
-
 logger = logging.getLogger(__name__)
 
 
 class InferenceService:
-    def __init__(self):
-        self.version = settings.model_version
-        logger.info(f"Loading model artifact. Type: {settings.model_artifact_type}")
+    def __init__(self, model_path: str, model_type: str, version: str = "v1.0.0"):
+        self.version = version
+        self.model_path = model_path
+        self.model_type = model_type.lower()
+        logger.info(f"Loading model artifact. Type: {self.model_type}")
         self.model = self._load_real_model()
         logger.info(f"Initialized InferenceService with model version: {self.version}")
 
@@ -24,11 +25,11 @@ class InferenceService:
         """
         Downloads (if URL) and loads the model artifact based on type.
         """
-        path = settings.model_artifact_path
-        m_type = settings.model_artifact_type.lower()
+        path = self.model_path
+        m_type = self.model_type
 
         if not path:
-            raise ValueError("MODEL_ARTIFACT_PATH must be set.")
+            raise ValueError("model_path must be set.")
 
         # Download from URL if needed
         if path.startswith("http://") or path.startswith("https://"):
@@ -45,15 +46,17 @@ class InferenceService:
 
         logger.info(f"Loading model from {local_path} using {m_type}...")
 
-        if m_type == "joblib":
-            return joblib.load(local_path)
-        elif m_type in ("pickle", "pkl"):
-            with open(local_path, "rb") as f:
-                return pickle.load(f)
-        else:
-            raise ValueError(
-                f"Unsupported MODEL_ARTIFACT_TYPE: {m_type}. Use 'joblib' or 'pickle'."
-            )
+        # Suppress noisy sklearn version mismatch warnings when unpickling older models
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            if m_type == "joblib":
+                return joblib.load(local_path)
+            elif m_type in ("pickle", "pkl"):
+                with open(local_path, "rb") as f:
+                    return pickle.load(f)
+            else:
+                raise ValueError(f"Unsupported model_type: {m_type}. Use 'joblib' or 'pickle'.")
 
     def predict(self, features: dict[str, Any]) -> Any:
         """
@@ -68,7 +71,10 @@ class InferenceService:
         input_array = np.array([list(features.values())])
 
         try:
-            prediction = self.model.predict(input_array)[0]
+            # Suppress noisy UserWarnings about missing valid feature names
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                prediction = self.model.predict(input_array)[0]
         except Exception as e:
             logger.error(f"Model prediction failed: {e}")
             raise RuntimeError(f"Failed to execute prediction on model: {e}") from e
@@ -78,7 +84,3 @@ class InferenceService:
             return prediction.item()
 
         return prediction
-
-
-# Singleton pattern to prevent reloading the model on every API request
-inference_service = InferenceService()

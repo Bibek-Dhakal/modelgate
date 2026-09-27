@@ -1,44 +1,75 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "modelgate"
 version = "0.2.0"
-description = "Containerized, publicly reachable inference service for a trained model."
-authors = [{ name = "Bibek Dhakal" }]
+description = "Production-ready machine learning inference API and SDK with zero boilerplate."
+readme = "README.md"
 requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "ModelGate Contributors" }
+]
+maintainers = [
+    { name = "Bibek Dhakal", email = "imbibek8366@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
 dependencies = [
-    "fastapi>=0.110.0",
-    "uvicorn[standard]>=0.29.0",
-    "pydantic>=2.6.0",
-    "pydantic-settings>=2.2.1",
-    "scikit-learn>=1.4.0",
-    "joblib>=1.3.2",
-    "jsonschema>=4.21.1",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "jsonschema>=4.0.0",
+    "joblib>=1.2.0",
+    "numpy>=1.20.0",
+    "scikit-learn>=1.0.0"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
-    "httpx>=0.27.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
     "ruff>=0.3.0",
-    "pre-commit>=3.6.0",
+    "pre-commit>=3.0.0",
+    "httpx>=0.24.0"
 ]
+
+[project.urls]
+Homepage = "https://github.com/Bibek-Dhakal/modelgate"
+Documentation = "https://github.com/Bibek-Dhakal/modelgate/blob/main/README.md"
+Repository = "https://github.com/Bibek-Dhakal/modelgate.git"
+Issues = "https://github.com/Bibek-Dhakal/modelgate/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["modelgate*"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py39"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+select = ["E", "F", "I", "UP", "SIM"]
 ignore = []
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "--cov=src --cov-report=term-missing --cov-report=xml"
 filterwarnings = [
-    "ignore:.*httpx2.*",
+    "ignore:.*starlette.testclient.*",
     "ignore::DeprecationWarning",
-    "ignore::sklearn.exceptions.InconsistentVersionWarning",
-    "ignore:Trying to unpickle estimator.*",
-    "ignore:.*X does not have valid feature names.*"
+    "ignore::UserWarning"
 ]

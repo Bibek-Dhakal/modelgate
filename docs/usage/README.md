@@ -1,8 +1,43 @@
 # Usage & Configuration
 
-ModelGate is designed to be completely configurable via Environment Variables. You do not need to alter the Python source code to swap models or update validation rules.
+ModelGate is designed to be completely configurable via Environment Variables for standalone API usage. However, it can also be imported natively as a Python SDK, allowing you to bypass environment variables and configure it programmatically.
 
-## Environment Variables Reference
+## Using the Python SDK
+
+In addition to the standalone server, you can use `ModelGate` as a lightweight programmatic library inside any standard Python application. It handles model downloading, deserialization, and schema validation.
+
+```python
+from modelgate import ModelGate
+
+# Instantiate the gate
+gate = ModelGate(version="v1.0.0")
+
+# Load your model from a URL or local file path
+gate.load_model(
+    model_path="https://huggingface.co/DmytroSerbeniuk/my-iris-model/resolve/main/model.joblib",
+    model_type="joblib",
+    schema="default_schema.json"
+)
+
+# Execute a prediction
+# If a schema was provided to load_model(), this will strictly validate first.
+prediction = gate.predict({
+    "sepal_length": 5.1,
+    "sepal_width": 3.5,
+    "petal_length": 1.4,
+    "petal_width": 0.2
+})
+
+print(f"Prediction: {prediction}")
+```
+
+---
+
+## Using the Standalone Docker API
+
+If you are deploying ModelGate as a standalone microservice, you do not need to alter the Python source code to swap models or update validation rules. Configuration is managed via `.env`.
+
+### Environment Variables Reference
 
 | Name | Type | Default Value | Description |
 |------|------|---------------|-------------|
