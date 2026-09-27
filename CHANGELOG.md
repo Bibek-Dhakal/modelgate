@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/Bibek-Dhakal/modelgate/compare/v0.3.0...v0.3.1) (2026-09-27)
+
+
+### Documentation
+
+* add SDK installation instructions and improve formatting ([c298b2a](https://github.com/Bibek-Dhakal/modelgate/commit/c298b2a04186f55abd3c6907566584f2d13e09db))
+
 ## [0.3.0](https://github.com/Bibek-Dhakal/modelgate/compare/v0.2.0...v0.3.0) (2026-09-27)
 
 
