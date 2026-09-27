@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "modelgate"
+name = "modelgate_py"
 version = "0.2.0"
-description = "Production-ready machine learning inference API and SDK with zero boilerplate."
+description = "Deploy-ready machine learning inference API and SDK with zero boilerplate."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

@@ -1,6 +1,6 @@
 # ModelGate 🚀
 
-> **Production-ready, containerized machine learning inference API with zero boilerplate.**
+> **Containerized machine learning inference API with zero boilerplate.**
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg)
