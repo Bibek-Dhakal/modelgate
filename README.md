@@ -90,6 +90,14 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
 
 ModelGate isn't just a standalone API—it can be used programmatically in your Python code as a lightweight SDK.
 
+Install the sdk first:
+
+```bash
+pip install modelgate-py
+```
+
+Then:
+
 ```python
 from modelgate import ModelGate
 
